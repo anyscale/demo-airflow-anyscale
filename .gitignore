@@ -1,0 +1,25 @@
+# Airflow
+airflow_home/
+airflow.cfg
+.env
+logs/
+plugins/
+config/
+
+# Logs
+logs/
+
+# Temporary files
+*.pyc
+*.pyo
+*.egg-info/
+__pycache__/
+
+# Virtual environment
+venv/
+
+# VS Code
+.vscode/
+
+# Pyenv
+.python-version

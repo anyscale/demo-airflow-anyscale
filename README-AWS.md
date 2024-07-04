@@ -1,15 +1,4 @@
 # A basic introduction to Anyscale and AWS Managed Airflow
-##### Brent Current Notes
-
-Not working yet - may require adding `anyscale` cli to requirements.txt. Testing this out.
-Current env:
-```
-troubleshooting org
-brent-aws-uswest2-airflow cloud
-demos aws account
-us-west-2
-brent-troubleshooting-airflow MWAA
-```
 
 ## 1. Getting airflow up and running
 
@@ -49,11 +38,59 @@ This will need a VPC with private subnets, not the default for AWS Anyscale Clou
 ## 3. Running a simple DAG
 
 ### Checkout the dag under `dags/sample_anyscale_job_workflow.py`
-This is a simple DAG that runs a job on anyscale. It uses the `SubmitAnyscaleJob` operator to run a job on anyscale. 
+This is a simple DAG that runs a job on anyscale. It uses the `SubmitAnyscaleJob` operator to run a job on anyscale. Make sure that the `ANYSCALE_CONN_ID` matches the name of the Connection you created above.
 
 ### Running the DAG
-1. Upload the contents of dags to S3. ex cli command: `aws s3 cp dags/ s3://<bucketname>/dags/ --recursive
-2. Click on the `trigger` button next to the `anyscale_job` DAG.
-3. Click on the `Graph View` tab to see the progress of the DAG.
-4. Click on the `Logs` tab to see the logs of the DAG.
+1. Upload the contents of dags to S3. ex cli command: `aws s3 cp dags/ s3://<bucketname>/dags/ --recursive`
+2. Click the `trigger` button next to the `anyscale_job` DAG.
+3. Click the `Graph View` tab to see the progress of the DAG.
+4. Click the `Logs` tab to see the logs of the DAG.
 5. Navigate to the Anyscale job page to see the job running.
+
+## Additional Notes for AWS
+
+The above configuration depends on the security of the MWAA environment to secure the API key. This can also be done with Secrets Manager.
+AWS has [provided a guide](https://docs.aws.amazon.com/mwaa/latest/userguide/connections-secrets-manager.html) on how to add AWS Secrets Manager
+access to MWAA. This requires small changes to the IAM Policy associated with the Role used by MWAA (granting it access to read secrets), and editing
+the MWAA environment to include some advanced optional configurations. Using Secrets Manager, you no longer need to create the connection in the
+Airflow Connection Admin section. Rough steps are as follows:
+
+1. Modify the IAM Policy for the MWAA Role to include Secrets Manager access. ex policy which limits access to secrets in a given account, in a given region, and that start with `airflow/`:
+
+```
+{
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds"
+            ],
+            "Resource": "arn:aws:secretsmanager:us-west-2:367974485317:secret:airflow/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "secretsmanager:ListSecrets",
+            "Resource": "*"
+        }
+```
+
+2. Modify the Airflow environment Configuration. Changing this setting takes ~20min for AWS to update the environment. The following example installs the appropriate secrets backend provider as well as tells Airflow to look for connections in Secrets Manager that are going to be named with the following prefix: `airflow/connections`:
+
+```
+secrets.backend : airflow.providers.amazon.aws.secrets.secrets_manager.SecretsManagerBackend
+secrets.backend_kwargs : {"connections_prefix" : "airflow/connections", "variables_prefix" : "airflow/variables"}
+```
+
+3. Create a secret in AWS Secrets Manager. This should be an "Other" type of Secret and created with Key/Pair values. A full list of valid options can be found in the [Airflow AWS Secrets Manager Provider](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/secrets-backends/aws-secrets-manager.html) documentation.
+    1. For the Anyscale integration, you will need `conn_type: anyscale`, `conn_id: <your_connection_name>`, and `key: <anyscale_api_key>`. 
+    2. Naming the Secret should include `airflow/connections/<anyscale_connection_name>` where `<anyscale_connection_name>` is the name you'd like to use for the connection. ex:
+```
+conn_type: anyscale
+conn_id: anyscale_secret
+key: aph0_xxxxxxxxxx
+
+Secret Name: airflow/connections/anyscale_secret
+```
+
+4. Modify the DAG to use the name of the connection stored in secrets manager. The Secrets Manager Connection configuration will search for connections under the connections prefix value configured in Step 2. An example of this is in `anyscale_job_aws_secretsmanager.py`

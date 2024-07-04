@@ -1,4 +1,15 @@
 # A basic introduction to Anyscale and AWS Managed Airflow
+##### Brent Current Notes
+
+Not working yet - may require adding `anyscale` cli to requirements.txt. Testing this out.
+Current env:
+```
+troubleshooting org
+brent-aws-uswest2-airflow cloud
+demos aws account
+us-west-2
+brent-troubleshooting-airflow MWAA
+```
 
 ## 1. Getting airflow up and running
 

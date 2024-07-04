@@ -1,2 +1,2 @@
 astro-provider-anyscale==1.0.0
-anyscale==0.24.47
+anyscale==0.24.44

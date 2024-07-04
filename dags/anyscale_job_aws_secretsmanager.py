@@ -5,14 +5,13 @@ from airflow import DAG
 from anyscale_provider.operators.anyscale import SubmitAnyscaleJob
 
 
-# Define the Anyscale connection
-ANYSCALE_CONN_ID = "anyscale"
-
 # Constants
 FOLDER_PATH = Path(__file__).parent / "ray_scripts"
 
+ANYSCALE_CONN_ID = "anyscale_secret"
+
 dag = DAG(
-    "sample_anyscale_job_workflow",
+    "sample_anyscale_job_aws_secret_conn",
     default_args={
         "owner": "airflow",
         "depends_on_past": False,
@@ -22,7 +21,7 @@ dag = DAG(
         "retries": 1,
         "retry_delay": timedelta(minutes=5),
     },
-    description="A DAG to interact with Anyscale triggered manually",
+    description="A DAG to interact with Anyscale triggered manually and conn from AWS Secrets Manager",
     schedule=None,  # This DAG is not scheduled, only triggered manually
     catchup=False,
 )

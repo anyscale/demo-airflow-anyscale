@@ -33,6 +33,7 @@ submit_anyscale_job = SubmitAnyscaleJob(
     name="Simple Anyscale Job",
     working_dir=str(FOLDER_PATH),
     entrypoint="python ray_job.py",
+    compute_config="brent-airflow-test:1",
     max_retries=1,
     job_timeout_seconds=3000,
     poll_interval=10,

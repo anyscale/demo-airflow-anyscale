@@ -1,0 +1,1 @@
+astro-provider-anyscale==1.0.0

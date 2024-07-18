@@ -13,7 +13,7 @@ Run `docker-compose up` in the root directory of this repository. This will star
 1. Go to the airflow webserver and click on `Admin` in the top right corner.
 2. Click on `Connections` and then `Create`.
 3. Fill in the following fields:
-    - Conn Id: `anyscale`
+    - Conn Id: `anyscale` - this needs to match what you use in the DAG
     - Conn Type: `Anyscale`
     - Password: `<your API Key>`
 
@@ -28,3 +28,17 @@ This is a simple DAG that runs a job on anyscale. It uses the `SubmitAnyscaleJob
 3. Click on the `Graph View` tab to see the progress of the DAG.
 4. Click on the `Logs` tab to see the logs of the DAG.
 5. Navigate to the Anyscale job page to see the job running.
+
+## Additional Notes
+
+### Developing Dags on Anyscale Workspaces
+
+To develop an Airflow Dag on Anyscale Workspaces, you need to install the following:
+```
+apache-airflow
+astro-provider-anyscale
+```
+
+### Anyscale CLI and Anysacle Airflow Provider
+
+Currently, the `astro-provider-anyscale` has the Anyscale CLI pinned to `anyscale-0.24.44` which is older than what is currently available. Installing `astro-provider-anyscale` will uninstall the newer version.
